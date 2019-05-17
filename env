@@ -13,17 +13,17 @@ export SDK_REL=android-sdk-r${SDK_REV}
 # For Honeywell, we can not go above 23
 # For Zebra we can not go above 22
 export ANDROID_API_LEVEL=22
-#export ANDROID_PLATFORM=arm
-export ANDROID_PLATFORM=arm64
+export ANDROID_PLATFORM=arm
+#export ANDROID_PLATFORM=arm64
 #export ANDROID_PLATFORM=x86
-export ANDROID_COMPILER=4.9
+export ANDROID_COMPILER=clang
 
 case "${NDK_REV}" in
   10*)
     export ANDROID_COMPILER64=clang3.6
     ;;
   *)
-    export ANDROID_COMPILER64=4.9
+    export ANDROID_COMPILER64=clang
     ;;
 esac
 
