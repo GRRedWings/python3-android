@@ -4,7 +4,7 @@ set -e
 set -x
 
 apt-get update -y
-apt-get install -y autoconf-archive autoconf automake cmake gawk gettext git gcc make patch pkg-config
+apt-get install -y xz-utils autoconf-archive autoconf automake cmake gawk gettext git gcc make patch pkg-config
 
 export ANDROID_NDK=/android-ndk
 
