@@ -35,7 +35,7 @@ jobs:
           - { ARCH: arm,     API: 30 }
           - { ARCH: arm64,   API: 30 }
     env:
-      PYVER: 3.13.0
+      PYVER: 3.10.0
     steps:
     - uses: actions/checkout@v4
     - name: Install autotools
