@@ -1,76 +1,62 @@
-name: Testing
+name: Build Android Project
 
-on: push
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
-# Release-related code borrowed from
-# https://github.com/actions/create-release/issues/14#issuecomment-555379810
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    if: contains(github.ref, '-android')
-    steps:
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1.0.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: true
-        prerelease: true
-    - name: Output Release URL File
-      run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
-    - name: Save Release URL File for publish
-      uses: actions/upload-artifact@v1
-      with:
-        name: release_url
-        path: release_url.txt
-
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        env:
-          - { ARCH: arm,     API: 23 }
-          - { ARCH: arm64,   API: 23 }
+
     env:
-      PYVER: 3.10.0
+      ANDROID_NDK: ${{ github.workspace }}/android-ndk-r25b
+      NDK_PATH: ${{ github.workspace }}/android-ndk-r25b
+
     steps:
-    - name: Checkout main repo
-      uses: actions/checkout@v2
-    - name: Building
-      run: |
-        docker run --rm -v $(pwd):/python3-android \
-            --env ARCH=${{ matrix.env.ARCH }} \
-            --env ANDROID_API=${{ matrix.env.API }} \
-            python:$PYVER-slim /python3-android/docker-build.sh
-    - name: Create package
-      id: create_package
-      run: |
-        sudo apt-get -y update && sudo apt-get -y install libarchive-tools xz-utils
-        package_filename=python3-android-$PYVER-${{ matrix.env.ARCH }}-${{ matrix.env.API }}.tar.xz
-        # sudo needed as files created by docker may not be readable by the current user
-        cd build && sudo bsdtar --xz -cf $package_filename *
-        echo ::set-output name=package_filename::$package_filename
-    - name: Load Release URL File from release job
-      uses: actions/download-artifact@v1
-      if: contains(github.ref, '-android')
-      with:
-        name: release_url
-    - name: Get Release File Name & Upload URL
-      id: get_release_info
-      if: contains(github.ref, '-android')
-      run: |
-        value=`cat release_url/release_url.txt`
-        echo ::set-output name=upload_url::$value
-    - name: Upload Release Asset
-      if: contains(github.ref, '-android')
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-        asset_path: build/${{ steps.create_package.outputs.package_filename }}
-        asset_name: ${{ steps.create_package.outputs.package_filename }}
-        asset_content_type: application/x-xz
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Android NDK
+        run: |
+          wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
+          unzip android-ndk-r25b-linux.zip -d $HOME
+          mv $HOME/android-ndk-r25b $ANDROID_NDK
+          echo "ANDROID_NDK=${ANDROID_NDK}" >> $GITHUB_ENV
+
+      - name: Clean
+        run: sudo ./clean.sh
+
+      - name: Build for arm64
+        run: sudo docker run --rm -v $(pwd):/python3-android -v ${NDK_PATH}:/android-ndk:ro --env ARCH=arm64 --env ANDROID_API=23 python:3.11.0-slim /python3-android/docker-build.sh --enable-shared --without-ensurepip --disable-ipv6 --with-build-python
+
+      - name: Upload arm64 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: arm64-build
+          path: ./build/*
+
+      - name: Clean
+        run: sudo ./clean.sh
+
+      - name: Build for arm
+        run: sudo docker run --rm -v $(pwd):/python3-android -v ${NDK_PATH}:/android-ndk:ro --env ARCH=arm --env ANDROID_API=23 python:3.11.0-slim /python3-android/docker-build.sh --enable-shared --without-ensurepip --disable-ipv6 --with-build-python
+
+      - name: Upload arm artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: arm-build
+          path: ./build/*
+
+      - name: Clean
+        run: sudo ./clean.sh
+
+      - name: Build for x86_64
+        run: sudo docker run --rm -v $(pwd):/python3-android -v ${NDK_PATH}:/android-ndk:ro --env ARCH=x86_64 --env ANDROID_API=23 python:3.11.0-slim /python3-android/docker-build.sh --enable-shared --without-ensurepip --disable-ipv6 --with-build-python
+
+      - name: Upload x86_64 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: x86_64-build
+          path: ./build/*
+          
