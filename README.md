@@ -24,7 +24,7 @@ Build
 1. Run `sudo ./clean.sh` for good measure, and after each build.
 2. You will need a separate build run for every API Level/architecture combination you wish to run on:
    <br>Here are a couple of examples to build a static version of the library with docker.
-   * Build 64 bit `sudo docker run --rm -it -v $(pwd):/python3-android -v /mnt/c/SPE/android-ndk-r28 --env ARCH=ARM64 --env ANDROID_API=30 --env ANDROID_NDK=/android-ndk-r28 python:3.13.0-slim /python3-android/docker-build.sh --enable-shared --without-ensurepip --disable-ipv6 --with-build-python`
+   * Build 64 bit `sudo docker run --rm -it -v $(pwd):/python3-android -v /mnt/c/SPE/android-ndk-r28 --env ARCH=arm64 --env ANDROID_API=30 --env ANDROID_NDK=/android-ndk-r28 python:3.13.0-slim /python3-android/docker-build.sh --enable-shared --without-ensurepip --disable-ipv6 --with-build-python`
    * Build x86_64 `sudo docker run --rm -it -v $(pwd):/python3-android -v /mnt/c/SPE/android-ndk-r28 --env ARCH=x86_64 --env ANDROID_API=30 --env ANDROID_NDK=/android-ndk-r28 python:3.13.0-slim /python3-android/docker-build.sh --enable-shared --without-ensurepip --disable-ipv6 --with-build-python`
 
 
