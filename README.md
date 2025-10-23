@@ -1,5 +1,6 @@
-Python 3 Android
+Python 3 Android - DEPRECATED
 ================
+**This project has been deprecated in favor of the [official Python support for Android](https://docs.python.org/3/using/android.html).**
 
 This is an experimental set of build scripts that will cross-compile Python 3.13.0 for an Android device.
 
